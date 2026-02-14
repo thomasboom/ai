@@ -1,7 +1,15 @@
 [package]
-name = "ai"
+name = "ailauncher"
 version = "0.1.0"
 edition = "2021"
+
+[[bin]]
+name = "ailauncher"
+path = "src/main.rs"
+
+[[bin]]
+name = "ai"
+path = "src/main.rs"
 
 [dependencies]
 dialoguer = { version = "0.11", features = ["fuzzy-select"] }
