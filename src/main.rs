@@ -1,6 +1,6 @@
 use anyhow::Result;
 use colored::Colorize;
-use dialoguer::{theme::ColorfulTheme, Select};
+use dialoguer::{theme::ColorfulTheme, FuzzySelect};
 use figlet_rs::FIGfont;
 use std::process::Command;
 use which::which;
@@ -131,11 +131,12 @@ fn main() -> Result<()> {
 
     let items: Vec<String> = installed
         .iter()
-        .map(|tool| format!("  {} - {}", tool.name.white().bold(), tool.description))
+        .map(|tool| format!("{} - {}", tool.name, tool.description))
         .collect();
 
-    let selection = Select::with_theme(&ColorfulTheme::default())
-        .with_prompt("Select AI tool to launch")
+    let selection = FuzzySelect::with_theme(&ColorfulTheme::default())
+        .with_prompt("Type to search for an AI tool")
+        .with_initial_text("")
         .default(0)
         .items(&items)
         .interact()?;
