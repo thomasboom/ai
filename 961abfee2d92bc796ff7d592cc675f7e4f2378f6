@@ -1,0 +1,35 @@
+website/install.sh
+  17f1a278092faae3 6-7,25-26,53
+README.md
+  17f1a278092faae3 1,5,10,16
+Cargo.toml
+  17f1a278092faae3 2,7-8,11
+src/main.rs
+  17f1a278092faae3 85
+website/uninstall.sh
+  17f1a278092faae3 6
+website/index.html
+  17f1a278092faae3 6,281-282
+Cargo.lock
+  17f1a278092faae3 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.3",
+  "base_commit_sha": "961abfee2d92bc796ff7d592cc675f7e4f2378f6",
+  "prompts": {
+    "17f1a278092faae3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019c7262-877f-72b1-a85a-bf09cee77048",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "ThomasNow Productions <thomasnowprod@proton.me>",
+      "messages": [],
+      "total_additions": 24,
+      "total_deletions": 24,
+      "accepted_lines": 19,
+      "overriden_lines": 0
+    }
+  }
+}
