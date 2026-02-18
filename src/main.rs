@@ -82,7 +82,7 @@ fn run_tool(command: &str) -> Result<()> {
 fn print_banner() {
     println!();
     let font = FIGfont::standard().unwrap();
-    if let Some(figure) = font.convert("AI SELECT") {
+    if let Some(figure) = font.convert("AIRun") {
         for line in figure.to_string().lines() {
             println!("  {}", line.cyan().bold());
         }

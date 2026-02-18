@@ -3,8 +3,8 @@
 set -e
 
 INSTALL_DIR="$HOME/.local/bin"
-BINARY_NAME="ai"
-REPO_URL="https://github.com/your-username/ai-launcher"
+BINARY_NAME="airun"
+REPO_URL="https://github.com/thomasboom/AIRUN"
 
 echo -e "\n\033[36m  AI Agent Launcher Installer\033[0m\n"
 echo "  Launch any AI CLI in seconds"
@@ -22,8 +22,8 @@ if command -v rustc &> /dev/null && command -v cargo &> /dev/null; then
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     PARENT_DIR="$(dirname "$SCRIPT_DIR")"
     
-    if [ -f "$PARENT_DIR/ai/Cargo.toml" ]; then
-        cd "$PARENT_DIR/ai"
+    if [ -f "$PARENT_DIR/AIRUN/Cargo.toml" ]; then
+        cd "$PARENT_DIR/AIRUN"
         cargo build --release
         cp target/release/$BINARY_NAME "$INSTALL_DIR/$BINARY_NAME"
         echo "  Built and installed successfully!"
@@ -50,5 +50,5 @@ fi
 
 echo ""
 echo "  \033[32mInstallation complete!\033[0m"
-echo "  Run 'ai' to launch the AI agent menu."
+echo "  Run 'airun' to launch AIRun."
 echo ""

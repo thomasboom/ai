@@ -1,14 +1,14 @@
 [package]
-name = "ailauncher"
+name = "airun"
 version = "0.1.0"
 edition = "2021"
 description = "Launch any AI CLI in seconds"
 license = "AGPL-3.0-only"
-repository = "https://github.com/thomasboom/AI-Select"
-homepage = "https://github.com/thomasboom/AI-Select"
+repository = "https://github.com/thomasboom/AIRUN"
+homepage = "https://github.com/thomasboom/AIRUN"
 
 [[bin]]
-name = "ailauncher"
+name = "airun"
 path = "src/main.rs"
 
 [dependencies]

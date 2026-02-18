@@ -1,19 +1,19 @@
-# ailauncher
+# AIRun
 
 Launch any AI CLI in seconds
 
-`ailauncher` is a terminal launcher that detects installed AI CLIs and lets you pick one from an interactive fuzzy menu.
+`AIRun` is a terminal launcher that detects installed AI CLIs and lets you pick one from an interactive fuzzy menu.
 
 ## Install
 
 ```bash
-cargo install ailauncher
+cargo install airun
 ```
 
 ## Run
 
 ```bash
-ailauncher
+airun
 ```
 
 ## License
