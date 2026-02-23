@@ -1,0 +1,23 @@
+website/index.html
+  6b960748e55b794b 245-256
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.4",
+  "base_commit_sha": "3fe9f57a5a9bc713fcd7b3ecf35a78453f34f5a3",
+  "prompts": {
+    "6b960748e55b794b": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "b7075407-2ab7-46af-a3ab-74e71f87a3fb",
+        "model": "default"
+      },
+      "human_author": "ThomasNow Productions <thomasnowprod@proton.me>",
+      "messages": [],
+      "total_additions": 12,
+      "total_deletions": 12,
+      "accepted_lines": 12,
+      "overriden_lines": 0
+    }
+  }
+}
