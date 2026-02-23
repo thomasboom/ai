@@ -31,6 +31,11 @@ const TOOLS: &[AiTool] = &[
         description: "Autonomous coding agent",
     },
     AiTool {
+        name: "Cursor CLI",
+        command: "agent",
+        description: "Cursor AI agent CLI",
+    },
+    AiTool {
         name: "Gemini CLI",
         command: "gemini",
         description: "Google Gemini AI assistant",

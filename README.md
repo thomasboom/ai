@@ -19,6 +19,7 @@ AIRun detects installed AI CLIs on your system and lets you pick one from an int
 | OpenCode | `opencode` | Open source AI coding agent |
 | Kilo | `kilo` | Interactive CLI coding assistant |
 | Cline | `cline` | Autonomous coding agent |
+| Cursor CLI | `agent` | Cursor AI agent CLI |
 | Gemini CLI | `gemini` | Google Gemini AI assistant |
 | Qwen | `qwen` | Alibaba Qwen AI assistant |
 | Claude CLI | `claude` | Anthropic Claude AI assistant |
