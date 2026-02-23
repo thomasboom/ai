@@ -1,0 +1,25 @@
+src/main.rs
+  fa1b329343277543 34-37
+README.md
+  fa1b329343277543 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.4",
+  "base_commit_sha": "609564d0cdfd7fb5f483cecbcdb8300e73877c1f",
+  "prompts": {
+    "fa1b329343277543": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "ae406412-108a-45fe-82f6-c6d41244eae6",
+        "model": "claude-4.6-opus-high-thinking"
+      },
+      "human_author": "ThomasNow Productions <thomasnowprod@proton.me>",
+      "messages": [],
+      "total_additions": 6,
+      "total_deletions": 0,
+      "accepted_lines": 6,
+      "overriden_lines": 0
+    }
+  }
+}
