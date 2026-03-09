@@ -235,10 +235,28 @@
 <body>
     <div class="container">
         <header>
-            <h1>Launch any AI CLI in seconds</h1>
+            <h1>The AIRun CLI</h1>
             <p class="tagline">Launch any AI CLI in seconds</p>
         </header>
 
+        <div class="section">
+            <div class="section-title">Commands</div>
+            <div class="install-block">
+                <div class="install-header">install</div>
+                <div class="install-code">
+                    <span><code>curl -fsSL</code> ai.sh/install | bash</span>
+                    <button class="copy-btn" onclick="copy(this, 'curl -fsSL ai.sh/install | bash')">copy</button>
+                </div>
+            </div>
+            <div class="install-block">
+                <div class="install-header">uninstall</div>
+                <div class="install-code">
+                    <span><code>curl -fsSL</code> ai.sh/uninstall | bash</span>
+                    <button class="copy-btn" onclick="copy(this, 'curl -fsSL ai.sh/uninstall | bash')">copy</button>
+                </div>
+            </div>
+        </div>
+        
         <div class="section">
             <div class="section-title">Supported Tools</div>
             <div class="tools-grid">
@@ -266,32 +284,15 @@
                 <div class="tool">Qodo CLI</div>
                 <div class="tool">Stakpak</div>
                 <div class="tool">Goose</div>
+                <div class="tool">Codebuff</div>
             </div>
         </div>
-
-        <div class="section">
-            <div class="section-title">Commands</div>
-            <div class="install-block">
-                <div class="install-header">install</div>
-                <div class="install-code">
-                    <span><code>curl -fsSL</code> ai.sh/install | bash</span>
-                    <button class="copy-btn" onclick="copy(this, 'curl -fsSL ai.sh/install | bash')">copy</button>
-                </div>
-            </div>
-            <div class="install-block">
-                <div class="install-header">uninstall</div>
-                <div class="install-code">
-                    <span><code>curl -fsSL</code> ai.sh/uninstall | bash</span>
-                    <button class="copy-btn" onclick="copy(this, 'curl -fsSL ai.sh/uninstall | bash')">copy</button>
-                </div>
-            </div>
-        </div>
-
+        
         <footer>
-            <span>built with rust</span>
+            <span>built by thomasboom</span>
             <div class="footer-links">
-                <a href="https://github.com/ThomasNowProductions/AIRun">github</a>
-                <a href="https://github.com/ThomasNowProductions/AIRun#readme">docs</a>
+                <a href="https://github.com/thomasboom/AIRun">github</a>
+                <a href="https://github.com/thomasboom/AIRun#readme">docs</a>
             </div>
         </footer>
     </div>

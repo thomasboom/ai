@@ -160,6 +160,12 @@ const TOOLS: &[AiTool] = &[
         args: Some(&["session"]),
         description: "Made by Scale AI",
     },
+    AiTool {
+        name: "Codebuff",
+        command: "codebuff",
+        args: None,
+        description: "Made by Codebuff",
+    },
 ];
 
 #[derive(Parser)]
