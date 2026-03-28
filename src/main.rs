@@ -166,6 +166,12 @@ const TOOLS: &[AiTool] = &[
         args: None,
         description: "Made by Codebuff",
     },
+    AiTool {
+        name: "Freebuff",
+        command: "freebuff",
+        args: None,
+        description: "Made by Codebuff",
+    },
 ];
 
 #[derive(Parser)]
