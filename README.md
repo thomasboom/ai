@@ -40,6 +40,8 @@ AIRun detects installed AI CLIs on your system and lets you pick one from an int
 | Qodo CLI | `qodo` | Made by Qodo |
 | Stakpak | `stakpak` | Made by Stakpak |
 | Goose | `goose session` | Made by Scale AI |
+| Codebuff | `codebuff` | Made by Codebuff |
+| Freebuff | `freebuff` | Made by Codebuff |
 
 ## Installation
 
@@ -52,7 +54,7 @@ cargo install airun
 ### From source
 
 ```bash
-git clone https://github.com/ThomasNowProductions/AIRun
+git clone https://codeberg.org/thomasboom/AIRun
 cd AIRun
 cargo install --path .
 ```
