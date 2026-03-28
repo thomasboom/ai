@@ -1,6 +1,6 @@
 [package]
 name = "airun"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2021"
 description = "Launch any AI CLI in seconds"
 license = "AGPL-3.0-only"
