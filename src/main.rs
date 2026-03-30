@@ -173,6 +173,8 @@ struct Args {
 }
 
 fn run_tool(command: &str, prepended_args: &[&str], user_args: &[String]) -> Result<()> {
+    print!("\x1B[2J\x1B[1H\x1B[3J");
+    std::io::Write::flush(&mut std::io::stdout()).ok();
     let mut cmd = Command::new(command);
     cmd.args(prepended_args)
         .args(user_args)
@@ -258,8 +260,7 @@ fn main() -> Result<()> {
 
     let tool = &installed[selection];
     let prepended_args: Vec<&str> = tool.args.map(|a| a.to_vec()).unwrap_or_default();
-    println!("\n  Launching {}...\n", tool.name.cyan().bold());
+    println!("\n  Launching {}...", tool.name.cyan().bold());
     run_tool(tool.command, &prepended_args, &[])?;
-    println!("\n  Returned from {}.\n", tool.name.cyan());
     Ok(())
 }
