@@ -26,7 +26,7 @@ const TOOLS: &[AiTool] = &[
         name: "Kilo",
         command: "kilo",
         args: None,
-        description: "Made by Kilo",
+        description: "Made by Kilo AI",
     },
     AiTool {
         name: "Cline",
@@ -57,12 +57,6 @@ const TOOLS: &[AiTool] = &[
         command: "claude",
         args: None,
         description: "Made by Anthropic",
-    },
-    AiTool {
-        name: "Copilot CLI",
-        command: "copilot-cli",
-        args: None,
-        description: "Made by GitHub/Microsoft",
     },
     AiTool {
         name: "Ollama",
@@ -123,12 +117,6 @@ const TOOLS: &[AiTool] = &[
         command: "droid",
         args: None,
         description: "Made by Factory AI",
-    },
-    AiTool {
-        name: "GitHub Copilot CLI",
-        command: "gh",
-        args: Some(&["copilot"]),
-        description: "Made by Microsoft",
     },
     AiTool {
         name: "Junie",
