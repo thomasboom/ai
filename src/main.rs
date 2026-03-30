@@ -3,7 +3,6 @@ use clap::Parser;
 use colored::Colorize;
 use console::{Key, Term};
 use dirs::config_dir;
-use figlet_rs::FIGfont;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -227,13 +226,6 @@ fn run_tool(command: &str, prepended_args: &[&str], user_args: &[String]) -> Res
 
 fn print_banner() {
     println!();
-    let font = FIGfont::standard().unwrap();
-    if let Some(figure) = font.convert("AIRun") {
-        for line in figure.to_string().lines() {
-            println!("  {}", line.cyan().bold());
-        }
-    }
-    println!("\n  Launch any AI CLI in seconds\n");
 }
 
 fn find_tool_by_name(name: &str) -> Option<AiTool> {
