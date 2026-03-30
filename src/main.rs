@@ -3,6 +3,7 @@ use clap::Parser;
 use colored::Colorize;
 use console::{Key, Term};
 use dirs::config_dir;
+use figlet_rs::FIGfont;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -238,12 +239,12 @@ fn run_tool(command: &str, prepended_args: &[&str], user_args: &[String]) -> Res
 
 fn print_banner() {
     println!();
-    println!("    ██████╗ ████████╗███████╗██████╗ ███╗   ███╗");
-    println!("   ██╔═══██╗╚══██╔══╝██╔════╝██╔══██╗████╗ ████║");
-    println!("   ██║   ██║   ██║   █████╗  ██████╔╝██╔████╔██║");
-    println!("   ██║   ██║   ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║");
-    println!("   ╚██████╔╝   ██║   ███████╗██║  ██║██║ ╚═╝ ██║");
-    println!("    ╚═════╝    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝");
+    let standard_font = FIGfont::standard().unwrap();
+    let figure = standard_font.convert("AIRun").unwrap();
+    let banner = figure.to_string();
+    for line in banner.lines() {
+        println!("{}", line.cyan().bold());
+    }
     println!();
 }
 
