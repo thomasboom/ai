@@ -171,6 +171,7 @@ struct Config {
     pinned_tools: Vec<String>,
     show_ascii: bool,
     show_shortcuts: bool,
+    enable_pinning: bool,
 }
 
 impl Default for Config {
@@ -179,6 +180,7 @@ impl Default for Config {
             pinned_tools: Vec::new(),
             show_ascii: true,
             show_shortcuts: true,
+            enable_pinning: true,
         }
     }
 }
@@ -221,6 +223,10 @@ struct Args {
     tool: Option<String>,
     #[arg(long, help = "Create 'ai' symlink pointing to airun")]
     remap: bool,
+    #[arg(long, help = "Open settings menu")]
+    settings: bool,
+    #[arg(long, help = "Pin tools selector")]
+    pin: bool,
     #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     args: Vec<String>,
 }
@@ -263,15 +269,96 @@ fn find_tool_by_name(name: &str) -> Option<AiTool> {
         .copied()
 }
 
+fn show_pin_menu(installed: &[AiTool], config: &Config) -> Result<()> {
+    let term = Term::stdout();
+    let mut selection = 0;
+    let mut new_pinned = config.pinned_tools.clone();
+
+    loop {
+        print!("\x1B[2J\x1B[H");
+        std::io::stdout().flush().ok();
+        println!();
+        println!("  {} {} Pin Tools", "AIRun".cyan().bold(), "›".dimmed());
+        println!();
+        println!("  Select tools to pin, press esc to save & exit");
+        println!();
+
+        if installed.is_empty() {
+            println!("  {}", "No AI tools installed.".yellow());
+            println!();
+            println!("  {}", "Press esc to return".dimmed());
+        } else {
+            for (i, tool) in installed.iter().enumerate() {
+                let is_selected = i == selection;
+                let prefix = if is_selected { " > " } else { "   " };
+                let is_pinned = new_pinned.contains(&tool.command.to_string());
+                let checkbox = if is_pinned { "[x]" } else { "[ ]" };
+                let name_color = if is_selected {
+                    tool.name.cyan().bold()
+                } else {
+                    tool.name.white().bold()
+                };
+                println!(
+                    "{}{} {} - {}",
+                    prefix,
+                    checkbox.dimmed(),
+                    name_color,
+                    tool.description.dimmed()
+                );
+            }
+
+            println!();
+            println!("  {}  {}", "↑↓ navigate".dimmed(), "↵ toggle".dimmed());
+            println!("  {}  {}", "esc save & exit".dimmed(), "".dimmed());
+        }
+
+        let key = term.read_key().ok();
+
+        match key {
+            Some(Key::ArrowUp) => {
+                if selection > 0 {
+                    selection -= 1;
+                }
+            }
+            Some(Key::ArrowDown) => {
+                if selection < installed.len() - 1 {
+                    selection += 1;
+                }
+            }
+            Some(Key::Enter) => {
+                if !installed.is_empty() {
+                    let tool_cmd = installed[selection].command.to_string();
+                    if new_pinned.contains(&tool_cmd) {
+                        new_pinned.retain(|t| t != &tool_cmd);
+                    } else {
+                        new_pinned.push(tool_cmd);
+                    }
+                }
+            }
+            Some(Key::Escape) => {
+                let mut new_config = config.clone();
+                new_config.pinned_tools = new_pinned;
+                new_config.save()?;
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    Ok(())
+}
+
 fn show_settings_menu(config: &Config) -> Result<()> {
     let term = Term::stdout();
     let mut selection = 0;
     let mut show_ascii = config.show_ascii;
     let mut show_shortcuts = config.show_shortcuts;
+    let mut enable_pinning = config.enable_pinning;
 
     let settings = [
         ("Show ASCII banner", &mut show_ascii),
         ("Show shortcut explainer", &mut show_shortcuts),
+        ("Enable pinning", &mut enable_pinning),
     ];
 
     loop {
@@ -319,6 +406,7 @@ fn show_settings_menu(config: &Config) -> Result<()> {
                 let mut new_config = config.clone();
                 new_config.show_ascii = show_ascii;
                 new_config.show_shortcuts = show_shortcuts;
+                new_config.enable_pinning = enable_pinning;
                 new_config.save()?;
                 break;
             }
@@ -383,6 +471,20 @@ fn main() -> Result<()> {
 
     let config = Config::load();
 
+    if args.settings {
+        show_settings_menu(&config)?;
+        return Ok(());
+    }
+
+    if args.pin {
+        if !config.enable_pinning {
+            println!("{}", "Pinning is disabled in settings.".yellow());
+            return Ok(());
+        }
+        show_pin_menu(&installed, &config)?;
+        return Ok(());
+    }
+
     if installed.is_empty() {
         print_banner();
         println!("{}", "  No AI tools found on your system.".yellow());
@@ -435,7 +537,7 @@ fn main() -> Result<()> {
             selection = filtered.len() - 1;
         }
 
-        let (original_idx, current_tool) = filtered[selection];
+        let (original_idx, _current_tool) = filtered[selection];
 
         print!("\x1B[2J\x1B[H");
         std::io::stdout().flush().ok();
@@ -449,7 +551,7 @@ fn main() -> Result<()> {
 
         for (i, (_, tool)) in filtered.iter().enumerate() {
             let is_selected = i == selection;
-            let is_pinned = pinned.contains(tool.command);
+            let is_pinned = config.enable_pinning && pinned.contains(tool.command);
             let marker = if is_pinned { "📌" } else { "  " };
             let prefix = if is_selected { " > " } else { "   " };
             let name_color = if is_selected {
@@ -468,7 +570,6 @@ fn main() -> Result<()> {
         if config.show_shortcuts {
             println!();
             println!("  {}  {}", "↑↓ navigate".dimmed(), "↵ select".dimmed());
-            println!("  {}  {}", "p pin/unpin".dimmed(), "s settings".dimmed());
             println!("  {}  {}", "esc exit".dimmed(), "".dimmed());
         }
 
@@ -484,21 +585,6 @@ fn main() -> Result<()> {
                 if selection < filtered.len() - 1 {
                     selection += 1;
                 }
-            }
-            Some(Key::Char('p')) | Some(Key::Char('P')) => {
-                let tool_cmd = current_tool.command;
-                let mut new_config = config.clone();
-                if pinned.contains(tool_cmd) {
-                    new_config.pinned_tools.retain(|t| t != tool_cmd);
-                } else {
-                    new_config.pinned_tools.push(tool_cmd.to_string());
-                }
-                new_config.save()?;
-                return main();
-            }
-            Some(Key::Char('s')) | Some(Key::Char('S')) => {
-                show_settings_menu(&config)?;
-                return main();
             }
             Some(Key::Enter) => {
                 let tool = sorted_installed[original_idx];
