@@ -165,9 +165,21 @@ const TOOLS: &[AiTool] = &[
     },
 ];
 
-#[derive(Serialize, Deserialize, Default, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 struct Config {
     pinned_tools: Vec<String>,
+    show_ascii: bool,
+    show_shortcuts: bool,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            pinned_tools: Vec::new(),
+            show_ascii: true,
+            show_shortcuts: true,
+        }
+    }
 }
 
 impl Config {
@@ -226,6 +238,13 @@ fn run_tool(command: &str, prepended_args: &[&str], user_args: &[String]) -> Res
 
 fn print_banner() {
     println!();
+    println!("    ██████╗ ████████╗███████╗██████╗ ███╗   ███╗");
+    println!("   ██╔═══██╗╚══██╔══╝██╔════╝██╔══██╗████╗ ████║");
+    println!("   ██║   ██║   ██║   █████╗  ██████╔╝██╔████╔██║");
+    println!("   ██║   ██║   ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║");
+    println!("   ╚██████╔╝   ██║   ███████╗██║  ██║██║ ╚═╝ ██║");
+    println!("    ╚═════╝    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝");
+    println!();
 }
 
 fn find_tool_by_name(name: &str) -> Option<AiTool> {
@@ -241,6 +260,72 @@ fn find_tool_by_name(name: &str) -> Option<AiTool> {
                     && format!("{} {}", t.command, t.args.unwrap().join(" ")) == name_lower)
         })
         .copied()
+}
+
+fn show_settings_menu(config: &Config) -> Result<()> {
+    let term = Term::stdout();
+    let mut selection = 0;
+    let mut show_ascii = config.show_ascii;
+    let mut show_shortcuts = config.show_shortcuts;
+
+    let settings = [
+        ("Show ASCII banner", &mut show_ascii),
+        ("Show shortcut explainer", &mut show_shortcuts),
+    ];
+
+    loop {
+        print!("\x1B[2J\x1B[H");
+        std::io::stdout().flush().ok();
+        println!();
+        println!("  {} {} Settings", "AIRun".cyan().bold(), "›".dimmed());
+        println!();
+        println!("  Toggle settings with ↵, press esc to return");
+        println!();
+
+        for (i, (name, value)) in settings.iter().enumerate() {
+            let is_selected = i == selection;
+            let prefix = if is_selected { " > " } else { "   " };
+            let checkbox = if **value { "[x]" } else { "[ ]" };
+            let name_color = if is_selected {
+                name.cyan().bold()
+            } else {
+                name.white()
+            };
+            println!("{}{} {}", prefix, name_color, checkbox.dimmed());
+        }
+
+        println!();
+        println!("  {}  {}", "↑↓ navigate".dimmed(), "↵ toggle".dimmed());
+        println!("  {}  {}", "esc save & exit".dimmed(), "".dimmed());
+
+        let key = term.read_key().ok();
+
+        match key {
+            Some(Key::ArrowUp) => {
+                if selection > 0 {
+                    selection -= 1;
+                }
+            }
+            Some(Key::ArrowDown) => {
+                if selection < settings.len() - 1 {
+                    selection += 1;
+                }
+            }
+            Some(Key::Enter) => {
+                *settings[selection].1 = !*settings[selection].1;
+            }
+            Some(Key::Escape) => {
+                let mut new_config = config.clone();
+                new_config.show_ascii = show_ascii;
+                new_config.show_shortcuts = show_shortcuts;
+                new_config.save()?;
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    Ok(())
 }
 
 fn main() -> Result<()> {
@@ -295,9 +380,11 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    print_banner();
+    let config = Config::load();
 
     if installed.is_empty() {
+        print_banner();
+        println!("{}", "  No AI tools found on your system.".yellow());
         println!("{}", "  No AI tools found on your system.".yellow());
         println!("\n  Install one of the following tools:");
         for tool in TOOLS {
@@ -306,8 +393,6 @@ fn main() -> Result<()> {
         println!("\n  Check your PATH or install an AI tool first.\n");
         return Ok(());
     }
-
-    let config = Config::load();
     let pinned: HashSet<String> = config.pinned_tools.iter().cloned().collect();
 
     let mut sorted_installed: Vec<AiTool> = installed.clone();
@@ -353,7 +438,11 @@ fn main() -> Result<()> {
 
         print!("\x1B[2J\x1B[H");
         std::io::stdout().flush().ok();
-        println!();
+
+        if config.show_ascii {
+            print_banner();
+        }
+
         println!("  {}  {}", "Type to search:".white().bold(), filter.cyan());
         println!();
 
@@ -375,9 +464,12 @@ fn main() -> Result<()> {
             println!("{}{} {} - {}", prefix, marker, name_color, desc_color);
         }
 
-        println!();
-        println!("  {}  {}", "↑↓ navigate".dimmed(), "↵ select".dimmed());
-        println!("  {}  {}", "p pin/unpin".dimmed(), "esc exit".dimmed());
+        if config.show_shortcuts {
+            println!();
+            println!("  {}  {}", "↑↓ navigate".dimmed(), "↵ select".dimmed());
+            println!("  {}  {}", "p pin/unpin".dimmed(), "s settings".dimmed());
+            println!("  {}  {}", "esc exit".dimmed(), "".dimmed());
+        }
 
         let key = term.read_key().ok();
 
@@ -401,6 +493,10 @@ fn main() -> Result<()> {
                     new_config.pinned_tools.push(tool_cmd.to_string());
                 }
                 new_config.save()?;
+                return main();
+            }
+            Some(Key::Char('s')) | Some(Key::Char('S')) => {
+                show_settings_menu(&config)?;
                 return main();
             }
             Some(Key::Enter) => {
