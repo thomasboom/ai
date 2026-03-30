@@ -168,6 +168,8 @@ const TOOLS: &[AiTool] = &[
 #[command(version)]
 struct Args {
     tool: Option<String>,
+    #[arg(long, help = "Create 'ai' symlink pointing to airun")]
+    remap: bool,
     #[arg(trailing_var_arg = true, allow_hyphen_values = true)]
     args: Vec<String>,
 }
@@ -212,6 +214,33 @@ fn find_tool_by_name(name: &str) -> Option<AiTool> {
 
 fn main() -> Result<()> {
     let args = Args::parse();
+
+    if args.remap {
+        let exe_path = std::env::current_exe()?;
+        let exe_dir = exe_path
+            .parent()
+            .ok_or_else(|| anyhow::anyhow!("Cannot get executable directory"))?;
+        let target_path = exe_dir.join("ai");
+
+        if target_path.exists() {
+            println!("{} already exists", target_path.display());
+        } else {
+            #[cfg(unix)]
+            {
+                std::os::unix::fs::symlink(&exe_path, &target_path)?;
+                println!(
+                    "Created symlink: {} -> {}",
+                    target_path.display(),
+                    exe_path.display()
+                );
+            }
+            #[cfg(not(unix))]
+            {
+                bail!("Symlinks are not supported on this platform");
+            }
+        }
+        return Ok(());
+    }
 
     let installed: Vec<AiTool> = TOOLS
         .par_iter()
