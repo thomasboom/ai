@@ -1,9 +1,13 @@
 use anyhow::{bail, Result};
 use clap::Parser;
 use colored::Colorize;
-use dialoguer::{theme::ColorfulTheme, FuzzySelect};
+use console::{Key, Term};
+use dirs::config_dir;
 use figlet_rs::FIGfont;
 use rayon::prelude::*;
+use serde::{Deserialize, Serialize};
+use std::collections::HashSet;
+use std::io::Write;
 use std::process::Command;
 use which::which;
 
@@ -162,6 +166,41 @@ const TOOLS: &[AiTool] = &[
     },
 ];
 
+#[derive(Serialize, Deserialize, Default, Clone)]
+struct Config {
+    pinned_tools: Vec<String>,
+}
+
+impl Config {
+    fn path() -> std::path::PathBuf {
+        config_dir()
+            .unwrap_or_else(|| std::path::PathBuf::from("."))
+            .join("airun")
+            .join("config.json")
+    }
+
+    fn load() -> Self {
+        let path = Self::path();
+        if path.exists() {
+            std::fs::read_to_string(&path)
+                .ok()
+                .and_then(|s| serde_json::from_str(&s).ok())
+                .unwrap_or_default()
+        } else {
+            Self::default()
+        }
+    }
+
+    fn save(&self) -> Result<()> {
+        let path = Self::path();
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(&path, serde_json::to_string_pretty(self)?)?;
+        Ok(())
+    }
+}
+
 #[derive(Parser)]
 #[command(name = "airun")]
 #[command(about = "Launch any AI CLI in seconds", long_about = None)]
@@ -276,20 +315,120 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    let items: Vec<String> = installed
-        .iter()
-        .map(|tool| format!("{} - {}", tool.name, tool.description))
-        .collect();
+    let config = Config::load();
+    let pinned: HashSet<String> = config.pinned_tools.iter().cloned().collect();
 
-    let selection = FuzzySelect::with_theme(&ColorfulTheme::default())
-        .with_prompt("Type to search for an AI tool")
-        .default(0)
-        .items(&items)
-        .interact()?;
+    let mut sorted_installed: Vec<AiTool> = installed.clone();
+    sorted_installed.sort_by(|a, b| {
+        let a_pinned = pinned.contains(a.command);
+        let b_pinned = pinned.contains(b.command);
+        if a_pinned && !b_pinned {
+            std::cmp::Ordering::Less
+        } else if !a_pinned && b_pinned {
+            std::cmp::Ordering::Greater
+        } else {
+            a.name.cmp(b.name)
+        }
+    });
 
-    let tool = &installed[selection];
-    let prepended_args: Vec<&str> = tool.args.map(|a| a.to_vec()).unwrap_or_default();
-    println!("\n  Launching {}...", tool.name.cyan().bold());
-    run_tool(tool.command, &prepended_args, &[])?;
-    Ok(())
+    let mut selection = 0;
+    let term = Term::stdout();
+    let mut filter = String::new();
+    loop {
+        let filtered: Vec<(usize, &AiTool)> = sorted_installed
+            .iter()
+            .enumerate()
+            .filter(|(_, t)| {
+                if filter.is_empty() {
+                    true
+                } else {
+                    let search = format!("{} {}", t.name, t.description).to_lowercase();
+                    search.contains(&filter.to_lowercase())
+                }
+            })
+            .collect();
+
+        if filtered.is_empty() {
+            println!("{}", "  No matches found.".yellow());
+            return Ok(());
+        }
+
+        if selection >= filtered.len() {
+            selection = filtered.len() - 1;
+        }
+
+        let (original_idx, current_tool) = filtered[selection];
+
+        print!("\x1B[2J\x1B[H");
+        std::io::stdout().flush().ok();
+        println!();
+        println!("  {}  {}", "Type to search:".white().bold(), filter.cyan());
+        println!();
+
+        for (i, (_, tool)) in filtered.iter().enumerate() {
+            let is_selected = i == selection;
+            let is_pinned = pinned.contains(tool.command);
+            let marker = if is_pinned { "📌" } else { "  " };
+            let prefix = if is_selected { " > " } else { "   " };
+            let name_color = if is_selected {
+                tool.name.cyan().bold()
+            } else {
+                tool.name.white().bold()
+            };
+            let desc_color = if is_selected {
+                tool.description.cyan()
+            } else {
+                tool.description.white()
+            };
+            println!("{}{} {} - {}", prefix, marker, name_color, desc_color);
+        }
+
+        println!();
+        println!("  {}  {}", "↑↓ navigate".dimmed(), "↵ select".dimmed());
+        println!("  {}  {}", "p pin/unpin".dimmed(), "esc exit".dimmed());
+
+        let key = term.read_key().ok();
+
+        match key {
+            Some(Key::ArrowUp) => {
+                if selection > 0 {
+                    selection -= 1;
+                }
+            }
+            Some(Key::ArrowDown) => {
+                if selection < filtered.len() - 1 {
+                    selection += 1;
+                }
+            }
+            Some(Key::Char('p')) | Some(Key::Char('P')) => {
+                let tool_cmd = current_tool.command;
+                let mut new_config = config.clone();
+                if pinned.contains(tool_cmd) {
+                    new_config.pinned_tools.retain(|t| t != tool_cmd);
+                } else {
+                    new_config.pinned_tools.push(tool_cmd.to_string());
+                }
+                new_config.save()?;
+                return main();
+            }
+            Some(Key::Enter) => {
+                let tool = sorted_installed[original_idx];
+                let prepended_args: Vec<&str> = tool.args.map(|a| a.to_vec()).unwrap_or_default();
+                println!("\n  Launching {}...", tool.name.cyan().bold());
+                run_tool(tool.command, &prepended_args, &[])?;
+                return Ok(());
+            }
+            Some(Key::Escape) => {
+                return Ok(());
+            }
+            Some(Key::Backspace) => {
+                filter.pop();
+            }
+            Some(Key::Char(c)) => {
+                filter.push(c);
+                selection = 0;
+            }
+            _ => {}
+        }
+    }
 }
