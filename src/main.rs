@@ -292,7 +292,7 @@ fn show_settings_menu(config: &Config) -> Result<()> {
             } else {
                 name.white()
             };
-            println!("{}{} {}", prefix, name_color, checkbox.dimmed());
+            println!("{}{} {}", prefix, checkbox.dimmed(), name_color);
         }
 
         println!();
